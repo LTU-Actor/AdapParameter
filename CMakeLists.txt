@@ -13,6 +13,7 @@ add_service_files(
   FILES
     Registration.srv
     Tune.srv
+    Feedback.srv
 )
 
 generate_messages(
