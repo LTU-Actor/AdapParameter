@@ -22,16 +22,16 @@ boxes", and will learn how to tune them. The learned profile (NN
 weights/conventional algorithm parameters) will be saved to disk under a unique
 hash of the number of input/output parameters and the node name.
 
-#### Theoretical Communication: 
+#### Theoretical Communication:
 
 ```text
 ┌───────────────────────┐         ┌────────────────────────┐
 │ Server                │         │ Client                 │
 │                       │         │                        │
 │  register node      <------------- init communication    │
-│  load learn file    <------------- send goals & feedback │
 │                       │         │                        │
-│  guess parameters     │         │                        │
+│  load learn file    <------------- send feedback         │
+│  init parameters      │         │                        │
 │  send parameters    -------------> update parameters     │
 │                       │         │  iterate node          │
 │  iterate learn algo <------------- send feedback         │
@@ -41,7 +41,9 @@ hash of the number of input/output parameters and the node name.
 └───────────────────────┘         └────────────────────────┘
 ```
 
-#### Registration
+### Service Types:
+
+#### Register
 
 Each 'Tunable Node' will call a ROS Service from the Parameter server to
 register itself. This request will include the following:
@@ -52,7 +54,7 @@ register itself. This request will include the following:
 
 On success, the parameter server will begin sending Tune Requests.
 
-#### Tune Request
+#### Tune
 
 The parameter server will attempt to service each node as fast as the
 specified, but may limit this frequency to share performance with other nodes.
@@ -75,6 +77,7 @@ then the next round the node will be automatically unregistered from the server.
 This feedback is send as a separate service call to keep the message passing
 linear, and much simpler to implement.
 
-#### Update Goals
+#### UpdateGoals
 
-At and point, the Node being tuned may request that its goals be updated.
+At and point, the Node being tuned may request that its goals be updated. This
+service must be called by the node itself.

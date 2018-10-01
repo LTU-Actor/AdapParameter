@@ -11,7 +11,7 @@ find_package(catkin
 
 add_service_files(
   FILES
-    Registration.srv
+    Register.srv
     Tune.srv
     Feedback.srv
 )
@@ -33,7 +33,11 @@ include_directories(
 
 add_executable(
   server
-  src/main.cpp
+  src/server/main.cpp
+  src/server/server.h
+  src/server/server.cpp
+  src/server/client.h
+  src/server/client.cpp
 )
 
 add_dependencies(
