@@ -13,6 +13,8 @@ This system will allow ROS nodes to register with a parameter server similar to 
    currently have
 3. Gather a measurable performance metric from the system
 4. Implement both a conventional and neural-network based learner
+5. Use the system to tune a Allied Vision camera node and the LTU ACTor "blob"
+   algorithm.
 
 System Functions
 ----------------
