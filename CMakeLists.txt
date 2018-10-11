@@ -40,6 +40,11 @@ add_executable(
   src/server/client.cpp
 )
 
+add_executable(
+  client
+  src/client/main.cpp
+)
+
 add_dependencies(
   server
   ${catkin_EXPORTED_TARGETS} # standard message/service files
@@ -48,5 +53,16 @@ add_dependencies(
 
 target_link_libraries(
   server
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(
+  client
+  ${catkin_EXPORTED_TARGETS} # standard message/service files
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} # this packages message/service files
+)
+
+target_link_libraries(
+  client
   ${catkin_LIBRARIES}
 )

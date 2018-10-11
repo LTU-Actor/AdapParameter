@@ -34,6 +34,8 @@ Server::registrationCB(
         ROS_ERROR_STREAM("Failed to connect to Adaptable Parameter client: "
                          << event.getCallerName());
         return false;
+    } else {
+        ROS_INFO_STREAM("Connected from: " << event.getCallerName());
     }
 
     Client *first_dead = NULL;
