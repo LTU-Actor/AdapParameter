@@ -8,16 +8,17 @@
 
 class Client {
 public:
-    static Client createClient(ros::NodeHandle &, const std::string &name,
-                               const adap_parameter::Register::Request &);
+    Client(ros::NodeHandle &, const std::string &name,
+           const adap_parameter::Register::Request &);
 
+    ~Client() { close(); }
     void close();
 
     bool processFeedback(const adap_parameter::FeedbackRequest &);
 
     explicit operator bool()
     {
-        if (!tune.isValid()) state = DEAD;
+        if (!tune.exists()) state = DEAD;
         return state != DEAD;
     }
     bool operator==(const std::string &n) { return node_name == n; }
@@ -29,11 +30,14 @@ private:
         SLEEPING // sleeping to send next tune
     } state;
 
-    Client() {}
+    Client(const Client &) = delete; // breaks callbacks on copy?
 
-    std::string              node_name;
-    ros::ServiceClient       tune;
+    ros::Timer updater;
+    void updateCB(const ros::TimerEvent &);
+
+    std::string node_name;
+    ros::ServiceClient tune;
     std::vector<std::string> parameter_names;
     std::vector<std::string> feedback_names;
-    std::vector<float>       feedback_goals;
+    std::vector<float> feedback_goals;
 };

@@ -26,38 +26,34 @@ Server::registrationCB(
 {
     std::string caller_name = event.getCallerName();
 
-    Client c =
-        Client::createClient(nh, caller_name, event.getRequest());
+    ROS_INFO_STREAM("Getting connection from: " << event.getCallerName());
+
+    std::shared_ptr<Client> c =
+        std::make_shared<Client>(nh, caller_name, event.getRequest());
 
     if (!c)
     {
         ROS_ERROR_STREAM("Failed to connect to Adaptable Parameter client: "
                          << event.getCallerName());
         return false;
-    } else {
-        ROS_INFO_STREAM("Connected from: " << event.getCallerName());
     }
 
-    Client *first_dead = NULL;
-    for (Client client : clients)
+    for (auto &client : clients)
     {
         // if client is already registered, replace it
-        if(client == caller_name)
+        if (*client == caller_name)
         {
-            c.close();
-            c = client;
+            ROS_INFO_STREAM("  Re-registering client");
+            client = c;
             return true;
-        } else if(first_dead == NULL) {
-            if(!client) first_dead = &client;
+        }
+        else if (!(*client))
+        {
+            client = c;
         }
     }
 
-    if(first_dead)
-    {
-        *first_dead = c;
-    } else {
-        clients.push_back(c);
-    }
+    clients.push_back(c);
 
     return true;
 }
@@ -66,9 +62,9 @@ bool
 Server::feedbackCB(ros::ServiceEvent<adap_parameter::Feedback::Request,
                                      adap_parameter::Feedback::Response> &event)
 {
-    for (Client c : clients)
-        if (c == event.getCallerName())
-            return c.processFeedback(event.getRequest());
+    for (auto &c : clients)
+        if (*c == event.getCallerName())
+            return c->processFeedback(event.getRequest());
 
     ROS_ERROR_STREAM(
         "Failed find registered client for feedback feedback from: "

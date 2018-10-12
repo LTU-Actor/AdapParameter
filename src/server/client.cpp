@@ -2,33 +2,61 @@
 
 #include <adap_parameter/Tune.h>
 
-Client
-Client::createClient(ros::NodeHandle &nh, const std::string &name,
-                     const adap_parameter::Register::Request &req)
+Client::Client(ros::NodeHandle &nh, const std::string &name,
+               const adap_parameter::Register::Request &req)
 {
-    Client c;
-
-    c.node_name = name;
+    node_name = name;
 
     std::string tune_path = name + "/tune";
-    c.tune = nh.serviceClient<adap_parameter::Tune>(tune_path, true);
+    tune = nh.serviceClient<adap_parameter::Tune>(tune_path, true);
 
-    c.parameter_names.reserve(req.parameter_names.size());
-    for (auto s : req.parameter_names) c.parameter_names.push_back(s.data);
+    parameter_names.reserve(req.parameter_names.size());
+    for (auto s : req.parameter_names)
+    {
+        parameter_names.push_back(s.data);
+        ROS_INFO_STREAM("  ParamName: " << s.data);
+    }
 
-    c.feedback_names.reserve(req.feedback_names.size());
-    for (auto s : req.parameter_names) c.feedback_names.push_back(s.data);
+    feedback_names.reserve(req.feedback_names.size());
+    for (auto s : req.feedback_names)
+    {
+        feedback_names.push_back(s.data);
+        ROS_INFO_STREAM("  FeedbackName: " << s.data);
+    }
 
-    c.feedback_goals.reserve(req.feedback_goals.size());
-    for (auto f : req.feedback_goals) c.feedback_goals.push_back(f.data);
+    feedback_goals.reserve(req.feedback_goals.size());
+    for (auto f : req.feedback_goals)
+    {
+        feedback_goals.push_back(f.data);
+        ROS_INFO_STREAM("  FeedbackGoal: " << f.data);
+    }
 
-    c.state = c.tune.waitForExistence(ros::Duration(.1)) ? WAITING : DEAD;
-    return c;
+    state = tune.waitForExistence(ros::Duration(.1)) ? WAITING : DEAD;
+
+    if (*this)
+        updater = nh.createTimer(ros::Duration(2), &Client::updateCB, this);
+}
+
+void
+Client::updateCB(const ros::TimerEvent &e)
+{
+    if (*this)
+    {
+        ROS_INFO_STREAM(node_name << ": Update ("
+                                  << (state == WAITING ? "waiting" : "sending")
+                                  << ")");
+    }
+    else
+    {
+        updater.stop();
+        ROS_INFO_STREAM(node_name << ": Removing dead node");
+    }
 }
 
 void
 Client::close()
 {
+    updater.stop();
     tune.shutdown();
     state = DEAD;
 }

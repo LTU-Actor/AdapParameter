@@ -83,7 +83,7 @@ main(int argc, char **argv)
 {
     ros::init(argc, argv, "test_client");
 
-    adap_parameter::Server::Tunables t = {{{"a"}, {"p2"}, {"p3"}},
+    adap_parameter::Server::Tunables t = {{{"p1"}, {"p2"}, {"p3"}},
                                           {{"f1", 1}, {"f2", 2}, {"f3", 3}}};
     adap_parameter::Server srv;
     srv.connect(t);

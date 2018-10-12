@@ -6,6 +6,7 @@
 
 #include <adap_parameter/Feedback.h>
 #include <adap_parameter/Register.h>
+#include <memory>
 
 #include "client.h"
 
@@ -24,5 +25,5 @@ private:
     ros::ServiceServer registration_server;
     ros::ServiceServer feedback_server;
 
-    std::vector<Client> clients;
+    std::vector<std::shared_ptr<Client>> clients;
 };
