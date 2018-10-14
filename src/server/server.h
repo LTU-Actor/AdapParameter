@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
+#include <unordered_map>
+#include <memory>
+#include <string>
 
 #include <ros/ros.h>
-
 #include <adap_parameter/Feedback.h>
 #include <adap_parameter/Register.h>
-#include <memory>
 
 #include "client.h"
 
@@ -21,9 +21,11 @@ private:
     bool feedbackCB(ros::ServiceEvent<adap_parameter::Feedback::Request,
                                       adap_parameter::Feedback::Response> &);
 
+    void pruneDeadClients();
+
     ros::NodeHandle    nh;
     ros::ServiceServer registration_server;
     ros::ServiceServer feedback_server;
 
-    std::vector<std::shared_ptr<Client>> clients;
+    std::unordered_map<std::string, std::shared_ptr<Client>> clients;
 };

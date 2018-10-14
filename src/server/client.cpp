@@ -48,8 +48,7 @@ Client::updateCB(const ros::TimerEvent &e)
     }
     else
     {
-        updater.stop();
-        ROS_INFO_STREAM(node_name << ": Removing dead node");
+        ROS_INFO_STREAM(node_name << ": Update (dead)");
     }
 }
 

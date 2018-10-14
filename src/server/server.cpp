@@ -38,22 +38,8 @@ Server::registrationCB(
         return false;
     }
 
-    for (auto &client : clients)
-    {
-        // if client is already registered, replace it
-        if (*client == caller_name)
-        {
-            ROS_INFO_STREAM("  Re-registering client");
-            client = c;
-            return true;
-        }
-        else if (!(*client))
-        {
-            client = c;
-        }
-    }
-
-    clients.push_back(c);
+    clients[event.getCallerName()] = c;
+    pruneDeadClients();
 
     return true;
 }
@@ -62,13 +48,28 @@ bool
 Server::feedbackCB(ros::ServiceEvent<adap_parameter::Feedback::Request,
                                      adap_parameter::Feedback::Response> &event)
 {
-    for (auto &c : clients)
-        if (*c == event.getCallerName())
-            return c->processFeedback(event.getRequest());
+    return clients[event.getCallerName()]->processFeedback(event.getRequest());
 
     ROS_ERROR_STREAM(
         "Failed find registered client for feedback feedback from: "
         << event.getCallerName());
 
     return false;
+}
+
+void
+Server::pruneDeadClients()
+{
+    for(auto it = clients.begin(); it != clients.end(); )
+    {
+        if(!(*it->second))
+        {
+            ROS_INFO_STREAM("Removing dead client: " << it->first);
+            clients.erase(it++);
+        } else
+        {
+            ROS_INFO_STREAM(it->first << " is alive");
+            ++it;
+        }
+    }
 }
