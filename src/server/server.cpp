@@ -26,19 +26,19 @@ Server::registrationCB(
 {
     std::string caller_name = event.getCallerName();
 
-    ROS_INFO_STREAM("Getting connection from: " << event.getCallerName());
+    ROS_INFO_STREAM("Getting connection from: " << caller_name);
 
     std::shared_ptr<Client> c =
         std::make_shared<Client>(nh, caller_name, event.getRequest());
 
     if (!c)
     {
-        ROS_ERROR_STREAM("Failed to connect to Adaptable Parameter client: "
-                         << event.getCallerName());
+        ROS_ERROR_STREAM(
+            "Failed to connect to Adaptable Parameter client: " << caller_name);
         return false;
     }
 
-    clients[event.getCallerName()] = c;
+    clients[caller_name] = c;
     pruneDeadClients();
 
     return true;
@@ -60,15 +60,17 @@ Server::feedbackCB(ros::ServiceEvent<adap_parameter::Feedback::Request,
 void
 Server::pruneDeadClients()
 {
-    for(auto it = clients.begin(); it != clients.end(); )
+    ROS_INFO_STREAM("Pruning...");
+    for (auto it = clients.begin(); it != clients.end();)
     {
-        if(!(*it->second))
+        if (!(*it->second))
         {
-            ROS_INFO_STREAM("Removing dead client: " << it->first);
+            ROS_INFO_STREAM(it->first << " is dead...");
             clients.erase(it++);
-        } else
+        }
+        else
         {
-            ROS_INFO_STREAM(it->first << " is alive");
+            ROS_INFO_STREAM(it->first << " is alive...");
             ++it;
         }
     }

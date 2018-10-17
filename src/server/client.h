@@ -2,9 +2,12 @@
 
 #include <adap_parameter/Feedback.h>
 #include <adap_parameter/Register.h>
+#include <memory>
 #include <ros/ros.h>
 #include <string>
 #include <vector>
+
+#include "tuner.h"
 
 class Client {
 public:
@@ -16,28 +19,24 @@ public:
 
     bool processFeedback(const adap_parameter::FeedbackRequest &);
 
-    explicit operator bool()
-    {
-        if (!tune.exists()) state = DEAD;
-        return state != DEAD;
-    }
+    explicit operator bool() { return tune.exists(); }
+
     bool operator==(const std::string &n) { return node_name == n; }
 
 private:
-    enum State {
-        DEAD,
-        WAITING, // waiting on feedback
-        SLEEPING // sleeping to send next tune
-    } state;
-
     Client(const Client &) = delete; // breaks callbacks on copy?
 
-    ros::Timer updater;
-    void updateCB(const ros::TimerEvent &);
+    void sendTune(const Tuner::parameters &params);
+
+    std::shared_ptr<Tuner> tuner = NULL;
+
+    void timerCB(const ros::TimerEvent &);
+    ros::Timer timer;
+    Tuner::parameters params_to_send;
 
     std::string node_name;
     ros::ServiceClient tune;
     std::vector<std::string> parameter_names;
     std::vector<std::string> feedback_names;
-    std::vector<float> feedback_goals;
+    Tuner::feedback feedback_goals;
 };
