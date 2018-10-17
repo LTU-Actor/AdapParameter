@@ -30,6 +30,7 @@ public:
         tune = nh.advertiseService("tune", &Server::tuneCB, this);
         feedback = nh.serviceClient<adap_parameter::Feedback>(
             "/adap_parameter/feedback", true); // persistant
+        timer = nh.createTimer(ros::Duration(0), &Server::timerCB, this, true, false);
     }
 
     bool connect(Tunables n)
@@ -60,21 +61,38 @@ public:
         return (initalized = registration.call(register_data));
     }
 
+    void setCallback(CallbackType cb) { this->cb = cb; }
+
 private:
     bool tuneCB(adap_parameter::Tune::Request &req,
                 adap_parameter::Tune::Response &res)
     {
+        std::cout << req.parameters[0].data << ", " << req.parameters[1].data << ", " << req.parameters[2].data << std::endl;
+
+        timer_args.request.feedback.resize(3);
+        timer_args.request.feedback[0].data = req.parameters[0].data/3;
+        timer_args.request.feedback[1].data = req.parameters[1].data*2;
+        timer_args.request.feedback[2].data = req.parameters[2].data;
+        timer.stop();
+        timer.setPeriod(ros::Duration(0));
+        timer.start();
+        return true;
+    }
+
+    void timerCB(const ros::TimerEvent &e)
+    {
+        feedback.call(timer_args);
     }
 
     CallbackType cb = NULL;
-    void setCallback(CallbackType cb) { this->cb = cb; }
 
     bool initalized = false;
 
     ros::NodeHandle nh;
-
     ros::ServiceServer tune;
     ros::ServiceClient feedback;
+    ros::Timer timer;
+    adap_parameter::Feedback timer_args;
 };
 } // namespace adap_parameter
 
@@ -84,9 +102,11 @@ main(int argc, char **argv)
     ros::init(argc, argv, "test_client");
 
     adap_parameter::Server::Tunables t = {{{"p1"}, {"p2"}, {"p3"}},
-                                          {{"f1", 1}, {"f2", 2}, {"f3", 3}}};
+                                          {{"f1", 0.13}, {"f2", 0.77}, {"f3", 0.02}}};
     adap_parameter::Server srv;
     srv.connect(t);
+
+    std::cout << "A, B, C" << std::endl;
 
     ros::spin();
 
