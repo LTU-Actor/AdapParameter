@@ -1,0 +1,3 @@
+<launch>
+  <node name="adap_server" pkg="adap_parameter" type="server" />
+</launch>
