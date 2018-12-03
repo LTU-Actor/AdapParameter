@@ -76,11 +76,12 @@ private:
         }
 
     private:
-        static constexpr double alpha = 0.001;
+        static constexpr double alpha = 0.05;
 
         double calc_slope(double error)
         {
-            if(parameter_m1 == parameter_m2) return 0;
+            if (parameter_m1 == parameter_m2)
+                return std::numeric_limits<double>::quiet_NaN();
             return (error_last - error) / (parameter_m2 - parameter_m1);
         }
 
@@ -94,7 +95,9 @@ private:
     {
         for (feedback::iterator f = fb.begin(), g = goals.begin();
              f != fb.end() && g != goals.end(); f++, g++)
-        { *f = *g - *f; } double sum = 0;
+            *f = *g - *f;
+
+        double sum = 0;
         for (const auto s : fb) sum += s * s;
 
         return std::sqrt(sum);

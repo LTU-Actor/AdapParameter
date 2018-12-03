@@ -5,6 +5,7 @@ add_definitions(-std=c++11)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/externals/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(Sanitizers)
+find_package(OpenCV)
 
 find_package(catkin
   REQUIRED
@@ -25,14 +26,38 @@ generate_messages(
     std_msgs
 )
 
+# This in the function that exports the client library and required include
+# files
 catkin_package(
+  INCLUDE_DIRS
+    include/
+  LIBRARIES
+    adap
   CATKIN_DEPENDS
     roscpp
     message_runtime
 )
 
 include_directories(
+  include/
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+add_library(
+  adap
+  src/libadap/libadap.cpp
+)
+
+add_dependencies(
+  adap
+  ${catkin_EXPORTED_TARGETS} # standard message/service files
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} # this packages message/service files
+)
+
+target_link_libraries(
+  adap
+  ${catkin_LIBRARIES}
 )
 
 add_executable(
@@ -46,32 +71,28 @@ add_executable(
 
 add_dependencies(
   server
-  ${catkin_EXPORTED_TARGETS} # standard message/service files
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} # this packages message/service files
+  ${catkin_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
 target_link_libraries(
   server
   ${catkin_LIBRARIES}
-  -fsanitize=address
 )
 
-add_sanitizers(server)
 
-add_executable(
-  client
-  src/client/main.cpp
-)
+add_executable(basic src/clients/basic.cpp)
+add_dependencies(basic ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(basic adap ${catkin_LIBRARIES})
 
-add_dependencies(
-  client
-  ${catkin_EXPORTED_TARGETS} # standard message/service files
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} # this packages message/service files
-)
+add_executable(v4l src/clients/v4l.cpp)
+add_dependencies(v4l ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(v4l adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
-target_link_libraries(
-  client
-  ${catkin_LIBRARIES}
-)
 
-add_sanitizers(client)
+if(Sanitizers_FOUND)
+  add_sanitizers(adap)
+  add_sanitizers(server)
+  add_sanitizers(basic)
+  add_sanitizers(v4l)
+endif(Sanitizers_FOUND)

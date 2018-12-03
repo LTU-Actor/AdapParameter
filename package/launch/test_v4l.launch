@@ -1,0 +1,4 @@
+<launch>
+  <node name="adap_server" pkg="adap_parameter" type="server" />
+  <node name="adap_client_v4l" pkg="adap_parameter" type="v4l" />
+</launch>
