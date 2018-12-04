@@ -81,18 +81,18 @@ target_link_libraries(
 )
 
 
-add_executable(basic src/clients/basic.cpp)
-add_dependencies(basic ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(basic adap ${catkin_LIBRARIES})
+add_executable(client_basic src/clients/basic.cpp)
+add_dependencies(client_basic ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(client_basic adap ${catkin_LIBRARIES})
 
-add_executable(v4l src/clients/v4l.cpp)
-add_dependencies(v4l ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(v4l adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+add_executable(client_v4l src/clients/v4l.cpp)
+add_dependencies(client_v4l ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(client_v4l adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
 if(Sanitizers_FOUND)
   add_sanitizers(adap)
   add_sanitizers(server)
-  add_sanitizers(basic)
-  add_sanitizers(v4l)
+  add_sanitizers(client_basic)
+  add_sanitizers(client_v4l)
 endif(Sanitizers_FOUND)

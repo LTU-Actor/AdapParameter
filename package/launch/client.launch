@@ -1,3 +1,0 @@
-<launch>
-  <node name="adap_client_csv" pkg="adap_parameter" type="client" />
-</launch>

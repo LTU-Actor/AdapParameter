@@ -26,7 +26,8 @@ optional arguments:
 This will create the subdirectory `./build_ws` with a syslink to `./package`,
 then call `catkin_make` inside this directory. If the `-r, --run` argument is
 given, it will automatically run `roslaunch` on the file in
-`./package/launch/`. It will automatically append the `.launch` suffix.
+`./package/launch/`. It will automatically append the `.launch` suffix if it is
+not already supplied.
 
 ## Other Docs
 

@@ -37,10 +37,12 @@ if (not os.path.islink(root + '/compile_commands.json')):
 
 if (args.run):
     try:
+        if (not args.run.endswith('.launch')):
+            args.run += '.launch'
+
         process = subprocess.Popen(
             '. devel/setup.sh && roslaunch adap_parameter ' +
-            args.run +
-            '.launch',
+            args.run,
             shell=True,
             cwd=path_buildws)
         process.wait()

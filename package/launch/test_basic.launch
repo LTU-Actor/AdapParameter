@@ -1,0 +1,4 @@
+<launch>
+  <node name="adap_server" pkg="adap_parameter" type="server" />
+  <node name="adap_client_basic" pkg="adap_parameter" type="client_basic" output="screen"/>
+</launch>
