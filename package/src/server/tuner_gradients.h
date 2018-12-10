@@ -30,9 +30,9 @@ public:
 
         past_errors.push(error);
         double avg_diff = past_errors.avg_diff();
-        if (avg_diff < 0 && avg_diff > -0.0005)
+        if (avg_diff < 0.005 && avg_diff > -0.005)
         {
-            ROS_INFO_STREAM("NEXT: " << avg_diff);
+            ROS_ERROR_STREAM("NEXT: " << params.size());
             target_param++;
             if (target_param == params.end()) target_param = params.begin();
             single_tuner = SingleGradient(*target_param);
@@ -65,18 +65,31 @@ private:
             double slope = calc_slope(error);
 
             if (std::isnan(slope))
-                ret = parameter_m1 + 0.05;
+            {
+                if (parameter_m1 < .9)
+                    ret = parameter_m1 + 0.05;
+                else if (parameter_m1 > .1)
+                    ret = parameter_m1 - 0.05;
+                else
+                    ret = 0.5;
+            }
             else
                 ret = parameter_m1 - slope * alpha;
 
             error_last = error;
             parameter_m2 = parameter_m1;
             parameter_m1 = ret;
+
+            if (ret > 1)
+                ret = 1;
+            else if (ret < 0)
+                ret = 0;
+
             return ret;
         }
 
     private:
-        static constexpr double alpha = 0.05;
+        static constexpr double alpha = 0.1;
 
         double calc_slope(double error)
         {
@@ -117,7 +130,7 @@ private:
                 return std::numeric_limits<double>::quiet_NaN();
 
             auto bb = index;
-            auto be = (index + 24) % data.size() + 1;
+            auto be = (index + 25) % data.size() + 1;
             auto eb = (index + 74) % data.size();
             auto ee = (index + 99) % data.size() + 1;
 

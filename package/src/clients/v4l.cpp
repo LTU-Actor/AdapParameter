@@ -1,4 +1,6 @@
 #include <adap_parameter/server.h>
+#include <cmath>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <ros/ros.h>
 
@@ -23,10 +25,25 @@ calculateDetail(const cv::Mat &image)
     cv::GaussianBlur(image, tmp, cv::Size(3, 3), 0);
     cv::Laplacian(tmp, tmp, tmp.depth(), 3);
 
-    cv::Scalar mean = cv::mean(tmp);
-    double sum = mean[0];
-    for (int i = 1; i < 4; i++)
-        if (mean[i] != 0) sum += mean[i];
+    double sum = 0;
+
+    cv::MatIterator_<uchar> it, end;
+    for (it = tmp.begin<uchar>(), end = tmp.end<uchar>(); it != end; ++it)
+    {
+        double n = (double)*it / 255.0;
+        double activate = .01;
+        double alpha = .5;
+        double s =
+            log(alpha * (n - activate) + 1) / log(alpha * (1 - activate) + 1);
+        if (s > 1) s = 1;
+        if (s < 0) s = 0;
+
+        sum += s;
+    }
+
+    sum /= (tmp.rows * tmp.cols * .1);
+
+    ROS_ERROR_STREAM(sum);
 
     return sum;
 }
@@ -42,12 +59,15 @@ main(int argc, char **argv)
         ROS_ERROR_STREAM("Failed to open default video stream");
         return EXIT_FAILURE;
     }
-    adap_parameter::Server::Tunables t = {{{"exposure"}}, {{"detail", 0.95}}};
+    adap_parameter::Server::Tunables t = {{{"exposure"}}, {{"detail", 1}}};
     srv->connect(t);
 
     camera->set(CV_CAP_PROP_AUTO_EXPOSURE, 0.25);
     camera->set(CV_CAP_PROP_EXPOSURE, 0);
 
+    std::cout << "Exposure,Detail" << std::endl;
+
+    long loop = 0;
     while (ros::ok())
     {
         cv::Mat frame;
@@ -59,18 +79,22 @@ main(int argc, char **argv)
 
         if (have_next_exposure == -1)
         {
-            double detail = calculateDetail(frame) / 255;
+            double detail = calculateDetail(frame);
             adap_parameter::Feedback::Request fb;
             fb.feedback.resize(1);
             fb.feedback[0].data = detail;
             srv->sendFeedback(fb);
             // ROS_INFO_STREAM("Sent fb: " << detail);
+            std::cout << detail << std::endl;
             have_next_exposure = 0;
+
+            if (loop++ == 40) break;
         }
         else if (have_next_exposure == 1)
         {
             camera->set(CV_CAP_PROP_EXPOSURE, next_exposure);
-            have_next_exposure = -10;
+            have_next_exposure = -5;
+            std::cout << next_exposure << ",";
         }
         else
         {

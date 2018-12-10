@@ -1,13 +1,16 @@
 #include <adap_parameter/server.h>
 #include <ros/ros.h>
+#include <cstdlib>
 
 adap_parameter::Server *srv = NULL;
 
 bool
 tuneCB(adap_parameter::Tune::Request &req, adap_parameter::Tune::Response &res)
 {
-    std::cout << req.parameters[0].data << ", " << req.parameters[1].data
-              << ", " << req.parameters[2].data << std::endl;
+    static long count = 0;
+    if(count++ > 1000) exit(EXIT_SUCCESS);
+    std::cout << req.parameters[0].data << "," << req.parameters[1].data
+              << "," << req.parameters[2].data << std::endl;
 
     adap_parameter::Feedback::Request fb;
     fb.feedback.resize(3);
@@ -29,7 +32,7 @@ main(int argc, char **argv)
         {{"p1"}, {"p2"}, {"p3"}}, {{"f1", 0.13}, {"f2", 0.77}, {"f3", 0.02}}};
 
     srv->connect(t);
-    std::cout << "A, B, C" << std::endl;
+    std::cout << "A,B,C" << std::endl;
     ros::spin();
     return EXIT_SUCCESS;
 }
