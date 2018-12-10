@@ -30,6 +30,12 @@ optional arguments:
   -r RUN, --run RUN  Automatically start a .launch file
 ```
 
+##### Examples:
+```text
+./build.py -r test_basic
+./build.py -r test_v4l
+```
+
 This will create the subdirectory `./build_ws` with a syslink to `./package`,
 then call `catkin_make` inside this directory. If the `-r, --run` argument is
 given, it will automatically run `roslaunch` on the file in
@@ -58,6 +64,12 @@ usage: graph.py [-h] -r RUN
 optional arguments:
   -h, --help         show this help message and exit
   -r RUN, --run RUN  Automatically start a client
+```
+
+##### Examples:
+```text
+./graph.py -r client_basic
+./graph.py -r client_v4l
 ```
 
 ## Other Docs
