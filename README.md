@@ -63,3 +63,7 @@ optional arguments:
 ## Other Docs
 
 [Requirements Specification](doc/Requirements%20Specification.md)
+
+[Technical Tidbits](doc/Technical%20Tidbits.md)
+
+[Create a Client](doc/Create%20a%20Client.md)
