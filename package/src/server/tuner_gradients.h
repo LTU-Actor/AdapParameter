@@ -8,6 +8,7 @@
 #include <deque>
 #include <numeric>
 #include <vector>
+#include <functional>
 
 class TunerGradients : public Tuner {
 public:
@@ -16,28 +17,22 @@ public:
         params.resize(num_params);
         std::fill(params.begin(), params.end(), 0.5);
         this->goals = goals;
-        target_param = params.begin();
-        single_tuner = SingleGradient(*target_param);
+        single_tuners.reserve(num_params);
+        for(int i=0; i<num_params; i++)
+            single_tuners.emplace_back(SingleGradient(params.at(i)));
         past_errors = Statistics();
+        current_tuner = single_tuners.begin();
         return true;
     }
 
     parameters iterate(const feedback &feedback)
     {
         double error = calc_error(feedback);
-        *target_param = single_tuner.iterate(error);
 
-
-        past_errors.push(error);
-        double avg_diff = past_errors.avg_diff();
-        if (avg_diff < 0.005 && avg_diff > -0.005)
-        {
-            ROS_ERROR_STREAM("NEXT: " << params.size());
-            target_param++;
-            if (target_param == params.end()) target_param = params.begin();
-            single_tuner = SingleGradient(*target_param);
-            past_errors = Statistics();
-        }
+        current_tuner->feedback(error);
+        current_tuner++;
+        if (current_tuner == single_tuners.end()) current_tuner = single_tuners.begin();
+        current_tuner->apply(error);
 
         return params;
     }
@@ -47,17 +42,14 @@ public:
 private:
     class SingleGradient {
     public:
-        SingleGradient(double inital_parameter) : parameter_m1(inital_parameter)
+        SingleGradient(double &parameter) : parameter_m1(parameter), parameter(parameter)
         {
             double nan = std::numeric_limits<double>::quiet_NaN();
             parameter_m2 = nan;
             error_last = nan;
         }
 
-        SingleGradient() {} // Do nothing. Object is is useless and will throw
-                            // floating point exception on use.
-
-        double iterate(double error)
+        double feedback(double error)
         {
             if (error < 0) error *= -1;
 
@@ -74,33 +66,46 @@ private:
                     ret = 0.5;
             }
             else
-                ret = parameter_m1 - slope * alpha;
-
-            error_last = error;
-            parameter_m2 = parameter_m1;
-            parameter_m1 = ret;
+                ret = parameter_m1 - slope * alpha * error;
 
             if (ret > 1)
                 ret = 1;
             else if (ret < 0)
                 ret = 0;
 
+            ret = ret * .95 + .5 * .05;
+
+            parameter_m2 = parameter_m1;
+            parameter_m1 = ret;
+
+            to_apply = ret;
             return ret;
         }
 
+        void apply(double error)
+        {
+            error_last = error;
+            parameter.get() = to_apply;
+        }
+
+        SingleGradient(const SingleGradient &) = default;
     private:
-        static constexpr double alpha = 0.1;
+
+        double to_apply;
+        double slope = 0;
+        double alpha = 0.1;
 
         double calc_slope(double error)
         {
             if (parameter_m1 == parameter_m2)
-                return std::numeric_limits<double>::quiet_NaN();
+                return 0;
             return (error_last - error) / (parameter_m2 - parameter_m1);
         }
 
         double parameter_m1; // parameter last time
         double parameter_m2; // parameter before last
         double error_last;
+        std::reference_wrapper<double> parameter;
     };
 
     // return distance from goals
@@ -172,7 +177,6 @@ private:
 
     feedback goals;
     parameters params;
-
-    SingleGradient single_tuner;
-    parameters::iterator target_param;
+    std::vector<SingleGradient> single_tuners;
+    std::vector<SingleGradient>::iterator current_tuner;
 };
