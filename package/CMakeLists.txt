@@ -12,6 +12,8 @@ find_package(catkin
   COMPONENTS
     roscpp
     message_generation
+    cv_bridge
+    image_transport
 )
 
 add_service_files(

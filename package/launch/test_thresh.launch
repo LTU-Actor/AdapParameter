@@ -1,4 +1,6 @@
 <launch>
-  <node name="adap_server" pkg="adap_parameter" type="server" />
-  <node name="adap_client_thresh" pkg="adap_parameter" type="client_thresh" output="screen"/>
+    <node name="adap_server" pkg="adap_parameter" type="server" />
+    <node name="adap_client_thresh" pkg="adap_parameter" type="client_thresh" output="screen">
+        <param name="source" type="string" value="/my_camera/cam_pub/image_raw" />
+    </node>
 </launch>
