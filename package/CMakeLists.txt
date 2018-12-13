@@ -82,6 +82,9 @@ target_link_libraries(
   ${catkin_LIBRARIES}
 )
 
+add_executable(cam_pub src/util/cam_pub.cpp)
+add_dependencies(cam_pub ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(cam_pub adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(client_basic src/clients/basic.cpp)
 add_dependencies(client_basic ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -99,6 +102,8 @@ target_link_libraries(client_thresh adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 if(Sanitizers_FOUND)
   add_sanitizers(adap)
   add_sanitizers(server)
+  add_sanitizers(cam_pub)
   add_sanitizers(client_basic)
   add_sanitizers(client_v4l)
+  add_sanitizers(client_thresh)
 endif(Sanitizers_FOUND)

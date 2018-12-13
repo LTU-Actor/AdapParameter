@@ -1,6 +1,8 @@
 <launch>
     <node name="adap_server" pkg="adap_parameter" type="server" />
-    <node name="adap_client_thresh" pkg="adap_parameter" type="client_thresh" output="screen">
-        <param name="source" type="string" value="/my_camera/cam_pub/image_raw" />
+    <node name="cam_pub" pkg="adap_parameter" type="cam_pub" />
+    <node name="adap_client_thresh" pkg="adap_parameter" type="client_thresh">
+        <param name="source" type="string" value="/cam_pub/video" />
     </node>
+    <node name="rqt" pkg="rqt_gui" type="rqt_gui" args="--perspective-file $(find adap_parameter)/rqt_presets/test_thresh.perspective" />
 </launch>
