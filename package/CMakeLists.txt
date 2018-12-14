@@ -98,6 +98,10 @@ add_executable(client_thresh src/clients/thresh.cpp)
 add_dependencies(client_thresh ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(client_thresh adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
+add_executable(client_canny src/clients/canny.cpp)
+add_dependencies(client_canny ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(client_canny adap ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
 
 if(Sanitizers_FOUND)
   add_sanitizers(adap)
@@ -106,4 +110,5 @@ if(Sanitizers_FOUND)
   add_sanitizers(client_basic)
   add_sanitizers(client_v4l)
   add_sanitizers(client_thresh)
+  add_sanitizers(client_canny)
 endif(Sanitizers_FOUND)
