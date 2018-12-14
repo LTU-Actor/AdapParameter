@@ -21,6 +21,8 @@ private:
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
     image_transport::Publisher image_pub_;
+    ros::Publisher ratio_pub_;
+    ros::Publisher thresh_pub_;
     ros::Subscriber steer_sub_;
 
     std::unique_ptr<adap_parameter::Server> srv;
@@ -51,7 +53,10 @@ ThreshTest::ThreshTest() : nh_{"~"}, it_{nh_}
 
     image_sub_ =
         it_.subscribe(camera_source_topic, 1, &ThreshTest::imageCb, this);
-    image_pub_ = it_.advertise("threshold", 1);
+    image_pub_ = it_.advertise("video", 1);
+
+    ratio_pub_ = nh_.advertise<std_msgs::Float32>("ratio", 1);
+    thresh_pub_ = nh_.advertise<std_msgs::Float32>("threshold", 1);
 
     framecount_ = 0;
     next_thresh_ = 100;
@@ -87,12 +92,22 @@ ThreshTest::calculateRatio(const cv::Mat &img)
     image_pub_.publish(
         cv_bridge::CvImage(std_msgs::Header(), "mono8", img_gray).toImageMsg());
 
-    const int white = cv::countNonZero(img_gray);
-    const int total = img_gray.rows * img_gray.cols;
+    const double white = cv::countNonZero(img_gray);
+    const double total = img_gray.rows * img_gray.cols;
+    const double ratio = white / total;
+
+    std_msgs::Float32 msg_ratio;
+    std_msgs::Float32 msg_thresh;
+
+    msg_ratio.data = ratio;
+    msg_thresh.data = next_thresh_;
+
+    ratio_pub_.publish(msg_ratio);
+    thresh_pub_.publish(msg_thresh);
 
     // Return the ratio of white pixels
     ROS_INFO_STREAM("white/total: " << white << "/" << total);
-    return (double)white / (double)total;
+    return ratio;
 }
 
 void
