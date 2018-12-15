@@ -87,7 +87,8 @@ CannyTest::calculateRatio(const cv::Mat &img)
 
     cv::Mat img_gray;
     cv::cvtColor(img, img_gray, CV_BGR2GRAY);
-    cv::Canny(img_gray, img_gray, next_canny_, next_canny_*1.1, 3);
+    cv::medianBlur(img_gray, img_gray, 3);
+    cv::Canny(img_gray, img_gray, next_canny_, next_canny_, 3);
     image_pub_.publish(
         cv_bridge::CvImage(std_msgs::Header(), "mono8", img_gray).toImageMsg());
 
