@@ -59,9 +59,9 @@ private:
             if (std::isnan(slope))
             {
                 if (parameter < .9)
-                    ret = parameter + 0.05;
+                    ret = parameter + 0.05 * error;
                 else
-                    ret = parameter - 0.05;
+                    ret = parameter - 0.05 * error;
             }
             else if (std::abs(slope) < alpha)
                 ret = 2 * parameter - starting_parameter;
