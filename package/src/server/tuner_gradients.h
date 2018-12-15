@@ -56,6 +56,8 @@ private:
 
             double ret;
             double slope = (starting_error - error) / (starting_parameter - parameter);
+            if (error > 1) error = 1;
+            else if (error < -1) error = -1;
             if (std::isnan(slope))
             {
                 if (parameter < .9)
