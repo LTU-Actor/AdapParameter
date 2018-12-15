@@ -72,6 +72,16 @@ optional arguments:
 ./graph.py -r client_v4l
 ```
 
+## Synthetic Tests
+
+![synth-single](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_single.png)
+
+![synth-multiple](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_multiple.png)
+
+![synth-poly](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_poly.png)
+
+![synth-codependent](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_codependent.png)
+
 ## Other Docs
 
 [Requirements Specification](doc/Requirements%20Specification.md)
