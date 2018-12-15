@@ -12,8 +12,8 @@ tuneCB(adap_parameter::Tune::Request &req, adap_parameter::Tune::Response &res)
 
     adap_parameter::Feedback::Request fb;
     fb.feedback.resize(3);
-    fb.feedback[0].data = req.parameters[0].data / 3;
-    fb.feedback[1].data = req.parameters[1].data * 2;
+    fb.feedback[0].data = req.parameters[0].data;
+    fb.feedback[1].data = req.parameters[1].data;
     fb.feedback[2].data = req.parameters[2].data;
     srv->sendFeedback(fb);
 

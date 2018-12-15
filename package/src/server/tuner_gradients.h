@@ -20,7 +20,6 @@ public:
         single_tuners.reserve(num_params);
         for(int i=0; i<num_params; i++)
             single_tuners.emplace_back(SingleGradient(params.at(i)));
-        past_errors = Statistics();
         current_tuner = single_tuners.begin();
         return true;
     }
@@ -32,7 +31,7 @@ public:
         current_tuner->feedback(error);
         current_tuner++;
         if (current_tuner == single_tuners.end()) current_tuner = single_tuners.begin();
-        current_tuner->apply(error);
+        current_tuner->set_next(error);
 
         return params;
     }
@@ -42,50 +41,50 @@ public:
 private:
     class SingleGradient {
     public:
-        SingleGradient(double &parameter) : parameter_m1(parameter), parameter(parameter)
+        SingleGradient(double &parameter) : parameter_ref(parameter)
         {
             double nan = std::numeric_limits<double>::quiet_NaN();
-            parameter_m2 = nan;
-            error_last = nan;
+            starting_parameter = nan;
+            starting_error = nan;
+            to_apply = 0.5;
         }
 
-        double feedback(double error)
+        void feedback(double error)
         {
-            if (error < 0) error *= -1;
+            if (error < 0) error = -error;
+            const float parameter = parameter_ref.get();
 
             double ret;
-            double slope = calc_slope(error);
-
+            double slope = (starting_error - error) / (starting_parameter - parameter);
             if (std::isnan(slope))
             {
-                if (parameter_m1 < .9)
-                    ret = parameter_m1 + 0.05;
-                else if (parameter_m1 > .1)
-                    ret = parameter_m1 - 0.05;
+                if (parameter < .9)
+                    ret = parameter + 0.05;
                 else
-                    ret = 0.5;
+                    ret = parameter - 0.05;
             }
+            else if (std::abs(slope) < alpha)
+                ret = 2 * parameter - starting_parameter;
             else
-                ret = parameter_m1 - slope * alpha * error;
+                ret = parameter - slope * alpha * error;
 
             if (ret > 1)
                 ret = 1;
             else if (ret < 0)
                 ret = 0;
 
-            ret = ret * .95 + .5 * .05;
-
-            parameter_m2 = parameter_m1;
-            parameter_m1 = ret;
+            const double return_to_center = error * alpha;
+            ret = ret * (1 - return_to_center) + .5 * (return_to_center);
 
             to_apply = ret;
-            return ret;
         }
 
-        void apply(double error)
+        void set_next(double error)
         {
-            error_last = error;
-            parameter.get() = to_apply;
+            if (error < 0) error = -error;
+            starting_error = error;
+            starting_parameter = parameter_ref.get();
+            parameter_ref.get() = to_apply;
         }
 
         SingleGradient(const SingleGradient &) = default;
@@ -94,18 +93,9 @@ private:
         double to_apply;
         double slope = 0;
         double alpha = 0.1;
-
-        double calc_slope(double error)
-        {
-            if (parameter_m1 == parameter_m2)
-                return 0;
-            return (error_last - error) / (parameter_m2 - parameter_m1);
-        }
-
-        double parameter_m1; // parameter last time
-        double parameter_m2; // parameter before last
-        double error_last;
-        std::reference_wrapper<double> parameter;
+        double starting_parameter;
+        double starting_error;
+        std::reference_wrapper<double> parameter_ref;
     };
 
     // return distance from goals
@@ -120,60 +110,6 @@ private:
 
         return std::sqrt(sum);
     }
-
-    struct Statistics {
-        void push(double d)
-        {
-            data[index] = d;
-            index = (index + 1) % data.size();
-        }
-
-        double avg_diff()
-        {
-            if (std::any_of(data.begin(), data.end(),
-                            [](double d) { return std::isnan(d); }))
-                return std::numeric_limits<double>::quiet_NaN();
-
-            auto bb = index;
-            auto be = (index + 25) % data.size() + 1;
-            auto eb = (index + 74) % data.size();
-            auto ee = (index + 99) % data.size() + 1;
-
-            double sum_begin, sum_end;
-
-            if (bb < be)
-            {
-                sum_begin =
-                    std::accumulate(data.begin() + bb, data.begin() + be, 0.0f);
-            }
-            else
-            {
-                sum_begin =
-                    std::accumulate(data.begin() + bb, data.end(), 0.0f)
-                    + std::accumulate(data.begin(), data.begin() + be, 0.0f);
-            }
-
-
-            if (eb < ee)
-            {
-                sum_end =
-                    std::accumulate(data.begin() + eb, data.begin() + ee, 0.0f);
-            }
-            else
-            {
-                sum_end =
-                    std::accumulate(data.begin() + eb, data.end(), 0.0f)
-                    + std::accumulate(data.begin(), data.begin() + ee, 0.0f);
-            }
-
-            return sum_end - sum_begin;
-        }
-
-        Statistics() { data.fill(std::numeric_limits<double>::quiet_NaN()); }
-
-        std::array<double, 100> data;
-        int index = 0;
-    } past_errors;
 
     feedback goals;
     parameters params;

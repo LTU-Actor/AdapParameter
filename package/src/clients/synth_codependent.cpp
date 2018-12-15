@@ -8,7 +8,7 @@ bool
 tuneCB(adap_parameter::Tune::Request &req, adap_parameter::Tune::Response &res)
 {
     static long count = 0;
-    if(count++ > 1000) exit(EXIT_SUCCESS);
+    if(count++ > 100) exit(EXIT_SUCCESS);
 
     adap_parameter::Feedback::Request fb;
     fb.feedback.resize(3);
