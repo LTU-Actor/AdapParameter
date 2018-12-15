@@ -29,11 +29,13 @@ if (__name__ == '__main__'):
         time.sleep(2) # TODO: remove once client is able to wait
         node = build.launch_direct(args.run)
         build.waiton(node)
+        title = node.stdout.readline()
         df = pd.read_csv(node.stdout, sep=',')
         cols = df.columns
-        df['point'] = df.index
-        df = df.melt(value_vars=cols, id_vars=['point'])
-        sns.lineplot(x="point", y="value", hue='variable', data=df)
+        df['iteration'] = df.index
+        df = df.melt(value_vars=cols, id_vars=['iteration'])
+        g = sns.lineplot(x='iteration', y='value', hue='variable', data=df)
+        g.set_title(title)
         plt.show()
     finally:
         build.kill_node(server)

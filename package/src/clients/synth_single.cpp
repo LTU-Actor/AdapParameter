@@ -24,13 +24,15 @@ tuneCB(adap_parameter::Tune::Request &req, adap_parameter::Tune::Response &res)
 int
 main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_client");
+    ros::init(argc, argv, "synth_single");
     srv = new adap_parameter::Server(&tuneCB);
 
     adap_parameter::Server::Tunables t = {{{"p1"}}, {{"f1", 0.23}}};
 
     srv->connect(t);
-    std::cout << "p1, f1, Target" << std::endl;
+    std::cout << "Synthetic - Single Parameter & Feedback\nParameter "
+                 "1,Feedback 1,Target"
+              << std::endl;
     ros::spin();
     return EXIT_SUCCESS;
 }

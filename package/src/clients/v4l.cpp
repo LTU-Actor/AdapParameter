@@ -65,7 +65,7 @@ main(int argc, char **argv)
     camera->set(CV_CAP_PROP_AUTO_EXPOSURE, 0.25);
     camera->set(CV_CAP_PROP_EXPOSURE, 0);
 
-    std::cout << "Exposure,Detail" << std::endl;
+    std::cout << "Laplacian Exposure Control\nExposure,Detail" << std::endl;
 
     long loop = 0;
     while (ros::ok())
