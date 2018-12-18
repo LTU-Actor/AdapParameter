@@ -88,7 +88,7 @@ TunerGradients::SingleGradient::calculate(double error)
             to_apply = parameter - 0.05 * error;
     }
     // If slope is super small, make a bigger jump in the same direction
-    else if (std::abs(slope) < alpha)
+    else if (std::abs(slope) < alpha * error)
         to_apply = 2 * parameter - starting_parameter;
     // Otherwise (normally), make a jump proportional to our slope.
     // Slow down as we get closer to optimal.
