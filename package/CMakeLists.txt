@@ -65,38 +65,25 @@ target_link_libraries(
   ${catkin_LIBRARIES}
 )
 
-add_executable(cam_pub src/util/cam_pub.cpp)
-add_dependencies(cam_pub ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(cam_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+macro(add_client name)
+  add_executable(${name} ${ARGN})
+  add_dependencies(${name} ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  target_link_libraries(${name} ${catkin_LIBRARIES})
+endmacro()
 
-add_executable(client_synth_single src/clients/synth_single.cpp)
-add_dependencies(client_synth_single ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_synth_single ${catkin_LIBRARIES})
+add_client(client_synth_single src/clients/synth_single.cpp)
+add_client(client_synth_multiple src/clients/synth_multiple.cpp)
+add_client(client_synth_poly src/clients/synth_poly.cpp)
+add_client(client_synth_codependent src/clients/synth_codependent.cpp)
 
-add_executable(client_synth_multiple src/clients/synth_multiple.cpp)
-add_dependencies(client_synth_multiple ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_synth_multiple ${catkin_LIBRARIES})
-
-add_executable(client_synth_poly src/clients/synth_poly.cpp)
-add_dependencies(client_synth_poly ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_synth_poly ${catkin_LIBRARIES})
-
-add_executable(client_synth_codependent src/clients/synth_codependent.cpp)
-add_dependencies(client_synth_codependent ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_synth_codependent ${catkin_LIBRARIES})
-
-add_executable(client_v4l src/clients/v4l.cpp)
-add_dependencies(client_v4l ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_v4l ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(client_thresh src/clients/thresh.cpp)
-add_dependencies(client_thresh ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_thresh ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(client_canny src/clients/canny.cpp)
-add_dependencies(client_canny ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(client_canny ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
+add_client(cam_pub src/util/cam_pub.cpp)
+add_client(client_v4l src/clients/v4l.cpp)
+add_client(client_thresh src/clients/thresh.cpp)
+add_client(client_canny src/clients/canny.cpp)
+target_link_libraries(cam_pub ${OpenCV_LIBRARIES})
+target_link_libraries(client_v4l ${OpenCV_LIBRARIES})
+target_link_libraries(client_thresh ${OpenCV_LIBRARIES})
+target_link_libraries(client_canny ${OpenCV_LIBRARIES})
 
 if(Sanitizers_FOUND)
   add_sanitizers(server)
