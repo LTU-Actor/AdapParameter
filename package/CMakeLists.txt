@@ -51,6 +51,7 @@ add_executable(
   src/server/server.cpp
   src/server/client.h
   src/server/client.cpp
+  src/server/tuner_gradients.cpp
 )
 
 add_dependencies(

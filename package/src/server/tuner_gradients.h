@@ -2,116 +2,55 @@
 
 #include "tuner.h"
 
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <deque>
-#include <numeric>
-#include <vector>
 #include <functional>
 
+/*
+ * Create a SingleGradient tuner per parameter from the client that works
+ * separately. Each tune will change only one parameter at a time, and then move
+ * to the next.
+ *
+ * SingleGradient is a slope decent optimizer that has the possibility of
+ * getting stuck in one of two ways:
+ *  1. In a local minima
+ *  2. When there is no change in feedback from a change
+ *
+ * In the second case, it is possible to take larger and larger jumps in the
+ * same direction until we get a change.
+ */
 class TunerGradients : public Tuner {
 public:
-    bool init(int num_params, const feedback &goals)
-    {
-        params.resize(num_params);
-        std::fill(params.begin(), params.end(), 0.5);
-        this->goals = goals;
-        single_tuners.reserve(num_params);
-        for(int i=0; i<num_params; i++)
-            single_tuners.emplace_back(SingleGradient(params.at(i)));
-        current_tuner = single_tuners.begin();
-        return true;
-    }
-
-    parameters iterate(const feedback &feedback)
-    {
-        double error = calc_error(feedback);
-
-        current_tuner->feedback(error);
-        current_tuner++;
-        if (current_tuner == single_tuners.end()) current_tuner = single_tuners.begin();
-        current_tuner->set_next(error);
-
-        return params;
-    }
-
-    parameters get_inital() { return params; }
+    // Interface from the virtual Tuner class
+    bool init(int num_params, const feedback &goals);
+    parameters get_inital();
+    parameters iterate(const feedback &feedback);
 
 private:
     class SingleGradient {
+        // This seems to work well for most applications. It is still fast
+        // to tune, but does not overshoot much on noisy feedback.
+        constexpr static double alpha = 0.1;
+
     public:
-        SingleGradient(double &parameter) : parameter_ref(parameter)
-        {
-            double nan = std::numeric_limits<double>::quiet_NaN();
-            starting_parameter = nan;
-            starting_error = nan;
-            to_apply = 0.5;
-        }
+        // Remembers a reference to a parameter to make updates to
+        SingleGradient(double &parameter);
 
-        void feedback(double error)
-        {
-            if (error < 0) error = -error;
-            const float parameter = parameter_ref.get();
+        // Takes the feedback from immediately after the feedback given to
+        // set_next. It will calculate the next jump to take, but will wait to
+        // publish it until next cycle.
+        void calculate(double error);
 
-            double ret;
-            double slope = (starting_error - error) / (starting_parameter - parameter);
-            if (error > 1) error = 1;
-            else if (error < -1) error = -1;
-            if (std::isnan(slope))
-            {
-                if (parameter < .9)
-                    ret = parameter + 0.05 * error;
-                else
-                    ret = parameter - 0.05 * error;
-            }
-            else if (std::abs(slope) < alpha)
-                ret = 2 * parameter - starting_parameter;
-            else
-                ret = parameter - slope * alpha * error;
+        // Sets the calculated value, and remembers the starting error given
+        void set_next(double error);
 
-            if (ret > 1)
-                ret = 1;
-            else if (ret < 0)
-                ret = 0;
-
-            const double return_to_center = error * alpha;
-            ret = ret * (1 - return_to_center) + .5 * (return_to_center);
-
-            to_apply = ret;
-        }
-
-        void set_next(double error)
-        {
-            if (error < 0) error = -error;
-            starting_error = error;
-            starting_parameter = parameter_ref.get();
-            parameter_ref.get() = to_apply;
-        }
-
-        SingleGradient(const SingleGradient &) = default;
     private:
-
         double to_apply;
-        double slope = 0;
-        double alpha = 0.1;
         double starting_parameter;
         double starting_error;
         std::reference_wrapper<double> parameter_ref;
     };
 
     // return distance from goals
-    double calc_error(feedback fb)
-    {
-        for (feedback::iterator f = fb.begin(), g = goals.begin();
-             f != fb.end() && g != goals.end(); f++, g++)
-            *f = *g - *f;
-
-        double sum = 0;
-        for (const auto s : fb) sum += s * s;
-
-        return std::sqrt(sum);
-    }
+    double calc_error(feedback fb);
 
     feedback goals;
     parameters params;
