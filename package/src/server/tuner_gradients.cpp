@@ -7,6 +7,7 @@
 #include <functional>
 #include <numeric>
 #include <vector>
+#include <ros/ros.h>
 
 bool
 TunerGradients::init(int num_params, const Tuner::feedback &goals)
@@ -89,7 +90,14 @@ TunerGradients::SingleGradient::calculate(double error)
     }
     // If slope is super small, make a bigger jump in the same direction
     else if (std::abs(slope) < alpha * error)
-        to_apply = 2 * parameter - starting_parameter;
+    {
+        float last_jmp = parameter - starting_parameter;
+        to_apply = parameter + last_jmp * error;
+
+        // If we hit a boundry, then search in the other direction
+        if (to_apply > 1 || to_apply < 0)
+            to_apply = parameter - last_jmp * error;
+    }
     // Otherwise (normally), make a jump proportional to our slope.
     // Slow down as we get closer to optimal.
     else
