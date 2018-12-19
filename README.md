@@ -48,7 +48,7 @@ cd Adaptable-Parameter-Server
 # OR in a parent workspace
 roslaunch adap_parameter test_thresh
 ```
-![thresh desk](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/thresh_desk.png)
+![thresh desk](doc/assets/thresh_desk.png)
 
 #### Tuning the threshold of OpenCV's canny edge detection to achieve a good
    "edge density."
@@ -59,7 +59,7 @@ roslaunch adap_parameter test_thresh
 roslaunch adap_parameter test_canny
 ```
 
-![canny desk](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/canny_desk.png)
+![canny desk](doc/assets/canny_desk.png)
 
 
 ## Development Tools
@@ -124,18 +124,18 @@ optional arguments:
 
 # Synthetic Tests
 
-![synth-single](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_single.png)
+![synth-single](doc/assets/synth_single.png)
 
-![synth-multiple](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_multiple.png)
+![synth-multiple](doc/assets/synth_multiple.png)
 
-![synth-poly](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_poly.png)
+![synth-poly](doc/assets/synth_poly.png)
 
-![synth-codependent](https://raw.githubusercontent.com/LTU-AutoEV/Adaptable-Parameter-Server/assets/synth_codependent.png)
+![synth-codependent](doc/assets/synth_codependent.png)
 
 # Other Docs
 
-[Requirements Specification](doc/Requirements%20Specification.md)
+[Requirements Specification](doc/Requirements_Specification.md)
 
-[Technical Tidbits](doc/Technical%20Tidbits.md)
+[Technical Tidbits](doc/Technical_Tidbits.md)
 
-[Create a Client](doc/Create%20a%20Client.md)
+[Create a Client](doc/Create_a_Client.md)

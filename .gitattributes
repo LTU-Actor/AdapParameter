@@ -1,0 +1,6 @@
+doc/assets/synth_single.png filter=lfs diff=lfs merge=lfs -text
+doc/assets/thresh_desk.png filter=lfs diff=lfs merge=lfs -text
+doc/assets/canny_desk.png filter=lfs diff=lfs merge=lfs -text
+doc/assets/synth_codependent.png filter=lfs diff=lfs merge=lfs -text
+doc/assets/synth_multiple.png filter=lfs diff=lfs merge=lfs -text
+doc/assets/synth_poly.png filter=lfs diff=lfs merge=lfs -text
