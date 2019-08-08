@@ -122,7 +122,7 @@ optional arguments:
 ./graph.py -r client_synth_codependent
 ```
 
-# Synthetic Tests
+## Synthetic Tests
 
 ![synth-single](doc/assets/synth_single.png)
 
@@ -132,10 +132,11 @@ optional arguments:
 
 ![synth-codependent](doc/assets/synth_codependent.png)
 
-# Other Docs
+## Other Docs
 
 [Requirements Specification](doc/Requirements_Specification.md)
 
 [Technical Tidbits](doc/Technical_Tidbits.md)
 
 [Create a Client](doc/Create_a_Client.md)
+
